@@ -1,4 +1,4 @@
-import { FileHandle } from "fs/promises";
+import { FileHandle } from "node:fs/promises";
 
 let LOG_HANDLE: FileHandle | null = null;
 

@@ -1,9 +1,8 @@
 use std::io::Write;
 
 use anyhow::Result;
-use portable_pty::{native_pty_system, Child, CommandBuilder, PtyPair, PtySize};
+use portable_pty::{native_pty_system, CommandBuilder, PtyPair, PtySize};
 use serde::Serialize;
-use tauri::async_runtime::JoinHandle;
 use tauri::ipc::Channel;
 
 #[derive(Clone, Serialize)]
@@ -20,12 +19,7 @@ pub enum ProcessEvent {
 
 pub(crate) struct Process {
     pty: PtyPair,
-
-    handle: JoinHandle<()>,
-
-    process: Box<dyn Child + Send + Sync>,
     writer: Box<dyn Write + Send>,
-    web: Channel<ProcessEvent>,
 }
 
 pub struct ProcessOptions {
@@ -35,15 +29,20 @@ pub struct ProcessOptions {
 
 impl Process {
     // Create a new process
-    pub fn new(command: CommandBuilder, options: ProcessOptions) -> Result<Self> {
+    pub fn new(mut command: CommandBuilder, options: ProcessOptions) -> Result<Self> {
         let pty_system = native_pty_system();
         let pair = pty_system.openpty(options.size)?;
 
-        let child = pair.slave.spawn_command(command)?;
+        // Environment Variable Overrides
+        command.env("TERM", "xterm-256color");
+        command.env("COLORTERM", "truecolor");
+        command.env("TERM_PROGRAM", "host");
+
+        let _ = pair.slave.spawn_command(command)?;
 
         let web = options.web.clone();
         let mut reader = pair.master.try_clone_reader()?;
-        let write_handle = tauri::async_runtime::spawn(async move {
+        tauri::async_runtime::spawn(async move {
             let mut buffer: [u8; 1024] = [0; 1024];
             loop {
                 if let Ok(n) = reader.read(&mut buffer) {
@@ -62,13 +61,7 @@ impl Process {
 
         let writer = pair.master.take_writer()?;
 
-        Ok(Self {
-            pty: pair,
-            handle: write_handle,
-            writer,
-            process: child,
-            web: options.web,
-        })
+        Ok(Self { pty: pair, writer })
     }
 
     pub fn resize(&self, size: PtySize) -> Result<()> {

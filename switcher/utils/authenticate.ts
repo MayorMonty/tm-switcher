@@ -2,9 +2,10 @@ import inquirer from "inquirer";
 import { Client } from "vex-tm-client";
 import OBSWebSocket from "obs-websocket-js";
 import { Atem } from "atem-connection";
-import vextm from "../../secret/vextm.json";
-import { log } from "./logging";
-import { promptReportIssue } from "../behaviors/report";
+import { log } from "./logging.js";
+import process from "node:process";
+import { promptReportIssue } from "./report.js";
+import { env } from "./env.js";
 
 export type TMCredentials = {
   address: string;
@@ -12,7 +13,7 @@ export type TMCredentials = {
 };
 
 export async function getTournamentManagerCredentials(): Promise<TMCredentials> {
-  let { address, key } = await inquirer.prompt<TMCredentials>([
+  const { address, key } = await inquirer.prompt<TMCredentials>([
     {
       type: "input",
       message: "VEX TM Address:",
@@ -123,8 +124,8 @@ export async function getCredentials(): Promise<Credentials> {
   return { tm, obs, atem };
 }
 
-export async function keypress() {
-  return new Promise((resolve, reject) => {
+export function keypress() {
+  return new Promise((resolve) => {
     process.stdin.setRawMode(true);
     process.stdin.resume();
     process.stdin.on("data", resolve);
@@ -135,9 +136,9 @@ export async function connectTM({ address, key }: TMCredentials) {
   const client = new Client({
     address,
     authorization: {
-      client_id: vextm.client_id,
-      client_secret: vextm.client_secret,
-      expiration_date: vextm.expiration_date,
+      client_id: env.TM_CLIENT_ID,
+      client_secret: env.TM_CLIENT_SECRET,
+      expiration_date: Number.parseInt(env.TM_CLIENT_EXPIRES),
       grant_type: "client_credentials",
     },
     clientAPIKey: key,
@@ -160,15 +161,15 @@ export async function connectTM({ address, key }: TMCredentials) {
   return client;
 }
 
-export async function connectOBS(creds: OBSCredentials | null) {
+export async function connectOBS(credentials: OBSCredentials | null) {
   const obs = new OBSWebSocket();
 
-  if (!creds) {
+  if (!credentials) {
     return null;
   }
 
   try {
-    await obs.connect(creds.address, creds.password);
+    await obs.connect(credentials.address, credentials.password);
     const version = await obs.call("GetVersion");
 
     log("info", `OBS Version: ${version.obsVersion}`, false);
@@ -177,7 +178,7 @@ export async function connectOBS(creds: OBSCredentials | null) {
     log("info", ` RPC: ${version.rpcVersion}`, false);
 
     return obs;
-  } catch (e: any) {
+  } catch (e) {
     log(
       "error",
       `Open Broadcaster Studio: ${e}`,
@@ -189,11 +190,11 @@ export async function connectOBS(creds: OBSCredentials | null) {
   }
 }
 
-export async function connectATEM(
-  creds: ATEMCredentials | null
+export function connectATEM(
+  credentials: ATEMCredentials | null
 ): Promise<Atem | null> {
-  if (!creds?.address) {
-    return null;
+  if (!credentials?.address) {
+    return Promise.resolve(null);
   }
 
   return new Promise((resolve) => {
@@ -204,7 +205,7 @@ export async function connectATEM(
     process.on("uncaughtException", () => {});
     process.on("unhandledRejection", () => {});
 
-    atem.connect(creds?.address);
+    atem.connect(credentials?.address);
 
     const timeout = setTimeout(async () => {
       log(

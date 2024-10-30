@@ -1,4 +1,5 @@
-As always, contributions are always welcome! To develop, you will need to get access to a set of Third Party Integrations from DWAB. 
+As always, contributions are always welcome! To develop, you will need to get
+access to a set of Third Party Integrations from DWAB.
 
 ## Run From Source
 
@@ -14,8 +15,9 @@ software installed:
   - obs-websocket-js
   - vex-tm-client
 
-To run from source, you would need to supply your third-party credentials from DWAB. More
-information about obtaining these can be found in the [REC Foundation Knowledge Base](https://kb.roboticseducation.org/hc/en-us/articles/19238156122135)
+To run from source, you would need to supply your third-party credentials from
+DWAB. More information about obtaining these can be found in the
+[REC Foundation Knowledge Base](https://kb.roboticseducation.org/hc/en-us/articles/19238156122135)
 
 1. Clone or download this repository
 
@@ -32,7 +34,8 @@ Create the secrets directory from the template
 cp -r secret.template secret
 ```
 
-Edit `secret/vextm.json` to include your client credentials. It should look something like
+Edit `secret/vextm.json` to include your client credentials. It should look
+something like
 
 ```json
 {
@@ -58,6 +61,10 @@ npm run-script run
 
 ## Notice
 
-By submitting contributions to this project, you agree to license all contributions under the current project license if merged. The current project license can be obtained at https://github.com/brenapp/tm-switcher/blob/master/LICENSE. 
+By submitting contributions to this project, you agree to license all
+contributions under the current project license if merged. The current project
+license can be obtained at
+https://github.com/brenapp/tm-switcher/blob/master/LICENSE.
 
-Additionally, you attest that you have the legal right of authorship for the changes you are submitting.
+Additionally, you attest that you have the legal right of authorship for the
+changes you are submitting.

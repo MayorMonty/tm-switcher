@@ -1,32 +1,38 @@
 import {
-  getCredentials,
-  connectTM,
-  connectOBS,
   connectATEM,
-} from "./utils/authenticate";
+  connectOBS,
+  connectTM,
+  getCredentials,
+} from "./utils/authenticate.js";
 import {
   getAssociations,
   getAudienceDisplayOptions,
   getDisplayAssociations,
-  initFileHandles,
   getRecordingOptions,
   getTournamentAttachments,
-} from "./utils/input";
-import { log, setLogFile } from "./utils/logging";
-import { promptForUpdate } from "./utils/update";
-import { BEHAVIORS } from "./behaviors";
+  initFileHandles,
+} from "./utils/input.js";
+import { log, setLogFile } from "./utils/logging.js";
+import { promptForUpdate } from "./utils/update.js";
 
-import "./behaviors/display";
-import "./behaviors/recording";
-import "./behaviors/switcher";
-import "./behaviors/logging";
-import "./behaviors/heartbeat";
+import { AudienceDisplayBehavior } from "./behaviors/display.js";
+import { RecordingBehavior } from "./behaviors/recording.js";
+import { CoreSwitcherBehavior } from "./behaviors/switcher.js";
+import { LoggingBehavior } from "./behaviors/logging.js";
+import { HeartbeatBehavior } from "./behaviors/heartbeat.js";
+import { env } from "./utils/env.js";
+
+const BEHAVIORS = {
+  AudienceDisplayBehavior,
+  RecordingBehavior,
+  CoreSwitcherBehavior,
+  LoggingBehavior,
+  HeartbeatBehavior,
+};
 
 async function main() {
   console.log(
-    `TM Switcher v${
-      require("../../package.json").version
-    } - Created by Brendan McGuire (brendan@bren.app)`
+    `TM Switcher v${env.VERSION} - Created by Brendan McGuire (brendan@bren.app)`
   );
 
   await promptForUpdate();
@@ -40,20 +46,20 @@ async function main() {
   console.log(`Match Timestamps: ${handles.timestampPath}\n`);
 
   // Prompt the user for credentials
-  const creds = await getCredentials();
+  const credentials = await getCredentials();
 
   console.log("");
   log("info", "Connecting to servers: ", "Connecting to servers: ");
 
-  const tm = await connectTM(creds.tm);
+  const tm = await connectTM(credentials.tm);
   log("info", "Connected to Tournament Manager", "✅ Tournament Manager");
 
-  const obs = await connectOBS(creds.obs);
+  const obs = await connectOBS(credentials.obs);
   if (obs) {
     log("info", "Connected to OBS", `✅ OBS`);
   }
 
-  const atem = await connectATEM(creds.atem);
+  const atem = await connectATEM(credentials.atem);
   if (atem) {
     log("info", "Connected to ATEM", "✅ ATEM");
   }
@@ -82,7 +88,7 @@ async function main() {
       recordingOptions,
       connections: { tm, obs, atem },
       handles,
-      credentials: creds,
+      credentials: credentials,
     });
   }
 }

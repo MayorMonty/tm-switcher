@@ -1,39 +1,49 @@
 {
   "name": "tm-switcher",
-  "version": "1.9.0",
+  "version": "2.0.1",
   "main": "src/main.ts",
-  "bin": "out/switcher/main.js",
   "license": "MIT",
+  "bin": "./out/switcher/main.js",
   "scripts": {
-    "build": "tsc",
-    "bundle": "npm run build && rm -rf bundle && pkg package.json --options no-warnings",
-    "run": "rm -rf out && tsc && node out/switcher/main.js",
-    "rb": "npm run bundle && ./bundle/tm-switcher-macos"
+    "host:build": "cd host && npm run tauri build",
+    "host:dev": "cd host && npm run tauri dev",
+    "switcher:build": "tsc",
+    "switcher:compile": "pkg package.json --options no-warnings",
+    "switcher:run": "node out/switcher/main.js"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/@julusian/freetype2/prebuilds/**/*",
+      ".env"
+    ],
+    "targets": [
+      "latest-win-x64",
+      "latest-linux-x64",
+      "latest-linux-arm64",
+      "latest-macos-arm64",
+      "latest-macos-x64"
+    ],
+    "outputPath": "bundle"
   },
   "dependencies": {
     "@octokit/types": "^13.5.0",
     "@types/inquirer": "^7.3.1",
     "atem-connection": "^3.0.1",
     "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
     "inquirer": "^7.3.3",
     "obs-websocket-js": "^5.0.1",
     "vex-tm-client": "^1.4.0"
   },
-  "pkg": {
-    "assets": [
-      "node_modules/@julusian/freetype2/prebuilds/**/*",
-      "secret/**/*"
-    ],
-    "targets": [
-      "latest-macos-x64",
-      "latest-win-x64",
-      "latest-linux-x64"
-    ],
-    "outputPath": "bundle"
-  },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
     "@types/node": "^20.9.4",
+    "@yao-pkg/pkg": "^6.0.0",
     "pkg": "^5.8.1",
+    "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.8.3"
   }
 }

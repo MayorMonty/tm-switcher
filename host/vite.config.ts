@@ -1,12 +1,10 @@
 import { defineConfig } from "vite";
-import tailwindcss from "tailwindcss"
+import tailwindcss from "tailwindcss";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   clearScreen: false,
-  plugins: [
-    
-  ],
+  plugins: [],
   server: {
     port: 1420,
     strictPort: true,

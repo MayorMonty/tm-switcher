@@ -1,11 +1,12 @@
-import { server, token } from "../../secret/logs.json";
-import { readFile } from "fs/promises";
-import * as os from "os";
+import { readFile } from "node:fs/promises";
+import * as os from "node:os";
 import inquirer from "inquirer";
-import { getFileHandles } from "../utils/input";
-import { keypress } from "../utils/authenticate";
+import { getFileHandles } from "./input.js";
+import { keypress } from "./authenticate.js";
+import { env } from "./env.js";
+import process from "node:process";
 
-const DUMP_ENDPOINT = new URL("/dump", server);
+const DUMP_ENDPOINT = new URL("/dump", env.LOG_SERVER);
 
 export type IssueReportMetadata = {
   email: string;
@@ -39,7 +40,7 @@ export async function reportIssue(
   const frontmatter = [
     [`Email`, email],
     [`Comment`, comment],
-    [`Version`, require("../../../package.json").version],
+    [`Version`, env.VERSION],
     [`Date`, new Date().toISOString()],
     [
       `System`,
@@ -59,7 +60,7 @@ export async function reportIssue(
   const response = await fetch(DUMP_ENDPOINT, {
     method: "PUT",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${env.LOG_SERVER_TOKEN}`,
       "X-Log-Server-Frontmatter": JSON.stringify(
         Object.fromEntries(frontmatter)
       ),
@@ -91,7 +92,7 @@ export async function promptReportIssue(context: string) {
   await keypress();
 }
 
-process.on("uncaughtException", async (error, origin) => {
+process.on("uncaughtException", async (error) => {
   console.log(error);
   await promptReportIssue(error.toString());
   process.exit(1);

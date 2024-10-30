@@ -1,5 +1,6 @@
-import { Endpoints } from "@octokit/types";
 import chalk from "chalk";
+import { env } from "./env.js";
+import type { Endpoints } from "@octokit/types/dist-types/generated/Endpoints.js";
 
 export type ListReleasesResponse =
   Endpoints["GET /repos/{owner}/{repo}/releases"]["response"]["data"];
@@ -25,7 +26,7 @@ export async function getReleases(): Promise<ListReleasesResponse | null> {
     const body = await response.json();
 
     return body as ListReleasesResponse;
-  } catch (e) {
+  } catch (_) {
     return null;
   }
 }
@@ -68,7 +69,7 @@ export function compareVersion(current: Version, newest: Version) {
 }
 
 export async function promptForUpdate() {
-  const version: string = require("../../../package.json").version;
+  const version: string = env.VERSION;
 
   const release = await getLatestRelease();
   if (!release) {
